@@ -1,25 +1,4 @@
-![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
 
-# Express Spotify Searcher
-
-![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_eb6313ef8c1bd11e3732034ebd4edafa.png)
-
-## Introduction
-
-[Spotify](https://www.spotify.com/us/) is a super cool music streaming service that provides you access to tons of music without ever having to buy an album.
-
-Today, we're going to build an Express app to search Spotify for artists, albums, and tracks. Also, we'll be able to play a preview of some of these songs.
-
-<!-- To see the final product check out the deployed version: https://spotify-lab.herokuapp.com. -->
-
-It may seem like a lot, but let's break it down into steps!
-
-## Requirements
-
-- Fork this repo
-- Clone this repo
-
-## Submission
 
 - Upon completion, run the following commands:
 
