@@ -1,0 +1,26 @@
+<section class="track">
+    <div class="track-title">
+        <h3> Tracks </h3>
+        <img class="home-img-spotify" src="/images/track.png" alt="Track Icon">
+    </div>
+    <% tracks.forEach(track => {  %>
+        <ul class="track-name-artist-audio">
+            <li> <%=track.name %> </li>
+            <li>
+                Artist(s):
+                <% track.artists.forEach((artist, index) => { %>
+                    <%= artist.name %><%= index === track.artists.length - 1 ? '' : ',' %>
+                <% }) %>
+            </li> 
+            <li>
+                <% if (track.preview_url !== null) { %>
+                    <audio controls>
+                        <source src="<%=track.preview_url%>" type="audio/mpeg">
+                    </audio>
+                <% } else { %>
+                    <p style="margin-right: 80px;"> No preview audio </p>
+                <% } %>
+            </li>
+        </ul>
+    <% }) %>
+</section>

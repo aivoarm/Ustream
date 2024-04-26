@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+html, body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.home {
+    padding: 300px;
+    border: green, 1px;
+}
+
+.home-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0px 320px;
+}
+
+.home-img-spotify {
+    height: 50px;
+    width: auto;
+}
+
+.home-both {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 100px;
+    font-weight: bold;
+}
+
+.home {
+    background-image: url("../images/spotify-background.jpeg");
+    background-size: 100%;
+    opacity: 90%;
+}
+
+.home-search {
+    display: flex;
+    flex-direction: column;
+}
+
+.artist-name-img-album {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid darkgreen;
+    border-radius: 30px;
+    list-style-type: none;
+    margin: 50px 500px;
+    padding: 20px;
+}
+
+.artist-name-img-album img {
+    height: 400px;
+    width: auto;
+    margin: 20px;
+}
+
+.album-name-img-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid darkorange;
+    border-radius: 30px;
+    list-style-type: none;
+    margin: 50px 500px;
+    padding: 20px;
+}
+
+.album-name-img-track img {
+    height: 400px;
+    width: auto;
+    margin: 20px;
+}
+
+.track-name-artist-audio {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    justify-content: space-between;
+    margin: 20px 200px;
+    border: 2px solid black;
+    border-radius: 30px;
+
+}
+
+
+
+
+
+footer {
+    color: white;
+    background-color: rgb(0, 41, 0);
+    padding: 10px 30px;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+}
+
+footer img {
+    height: 50px;
+    width: auto;
+}
