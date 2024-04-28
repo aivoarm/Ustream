@@ -1,7 +1,29 @@
-# Dependency directory
-# https://docs.npmjs.com/cli/shrinkwrap#caveats
-node_modules
+# Ignore node_modules directory
+node_modules/
+
+# Ignore environment-specific files
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignore build output
+dist/
+build/
+*.log
+
+# Ignore macOS system files
 .DS_Store
 
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Ignore dependency lock files
+yarn.lock
 package-lock.json
+
+# Ignore local configuration files
+config.json
+.github
