@@ -1,106 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
-
-html, body {
-    font-family: Arial, Helvetica, sans-serif;
+/* Custom CSS for homepage */
+body {
+    background-color: #f8f9fa; /* Light gray background */
+    font-family: Arial, sans-serif;
 }
 
-.home {
-    padding: 300px;
-    border: green, 1px;
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.home-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0px 320px;
+h3 {
+    color: #1db954; /* Spotify green color */
 }
 
 .home-img-spotify {
-    height: 50px;
-    width: auto;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
 }
 
-.home-both {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 100px;
-    font-weight: bold;
+p {
+    color: #333; /* Dark text color */
 }
 
-.home {
-    background-image: url("../images/spotify-background.jpeg");
-    background-size: 100%;
-    opacity: 90%;
-}
-
-.home-search {
-    display: flex;
-    flex-direction: column;
-}
-
-.artist-name-img-album {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 2px solid darkgreen;
-    border-radius: 30px;
-    list-style-type: none;
-    margin: 50px 500px;
-    padding: 20px;
-}
-
-.artist-name-img-album img {
-    height: 400px;
-    width: auto;
-    margin: 20px;
-}
-
-.album-name-img-track {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 2px solid darkorange;
-    border-radius: 30px;
-    list-style-type: none;
-    margin: 50px 500px;
-    padding: 20px;
-}
-
-.album-name-img-track img {
-    height: 400px;
-    width: auto;
-    margin: 20px;
-}
-
-.track-name-artist-audio {
-    display: flex;
-    align-items: center;
-    list-style-type: none;
-    justify-content: space-between;
-    margin: 20px 200px;
-    border: 2px solid black;
-    border-radius: 30px;
-
-}
-
-
-
-
-
-footer {
-    color: white;
-    background-color: rgb(0, 41, 0);
-    padding: 10px 30px;
-}
-
-.footer-links {
+.container form {
     display: flex;
     align-items: center;
 }
 
-footer img {
-    height: 50px;
-    width: auto;
+.container label {
+    margin-right: 10px;
+}
+
+.container input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.container button[type="submit"] {
+    padding: 8px 16px;
+    background-color: #1db954; /* Spotify green color */
+    border: none;
+    border-radius: 4px;
+    color: #fff; /* White text color */
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #1db954; /* Spotify green color */
+    color: #fff; /* White text color */
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.btn-primary:hover {
+    background-color: #0a874e; /* Darker green color on hover */
+}
+
+/* Styling for CTA button */
+.btn-cta {
+    background-color: #ff6b6b; /* Red color for CTA button */
+    color: #fff; /* White text color */
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px; /* Larger padding for CTA button */
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.btn-cta:hover {
+    background-color: #e44242; /* Darker red color on hover */
 }
