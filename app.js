@@ -6,9 +6,28 @@ const express = require('express')
 const expressLayouts = require('express-ejs-layouts')
 const bodyParser = require('body-parser');
 const session = require('express-session'); // Add session management
-
+const passport = require('passport');
+const TwitterStrategy = require('passport-twitter').Strategy;
 // require spotify-web-api-node package here:
 const SpotifyWebApi = require('spotify-web-api-node')
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWID,
+    consumerSecret: process.env.TW_SECRET,
+    callbackURL: 'http://localhost:5000/auth/twitter/callback'
+  },
+  function(token, tokenSecret, profile, done) {
+    // Store user information or perform other actions
+    return done(null, profile);
+  }
+));
+const app = express()
+
+
+
+app.use(passport.initialize());
+
+
+
 
 // setting the spotify-api goes here:
 const spotifyApi = new SpotifyWebApi({
@@ -18,13 +37,7 @@ const spotifyApi = new SpotifyWebApi({
 })
 
 // Use session middleware
-const app = express()
-app.use(session({
-    secret: 'your_secret_key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
-}));
+
 
 // Check if user is authenticated middleware
 const isAuthenticated = (req, res, next) => {
@@ -46,7 +59,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
 app.use(express.static(__dirname + '/public'))
+app.use(session({
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set to true if using HTTPS
+}));
+app.use(passport.session());
 
+app.get('/', (req, res) => {
+    const userProfile = req.session.userProfile; // Retrieve user profile from session
+
+    // Render the index.ejs template with the user profile data
+    res.render('index', { userProfile: userProfile });
+});
 
 // Define routes for authentication
 app.get('/login', (req, res) => {
@@ -71,9 +97,34 @@ app.get('/callback', (req, res) => {
         });
 });
 
-app.get('/', (req, res) => {
-    res.render('index');
+app.get('/auth/twitter/callback', (req, res) => {
+    const { oauth_token, oauth_verifier } = req.query;
+    console.log(oauth_token)
+
+    if (!oauth_token || !oauth_verifier) {
+        return res.redirect('/login'); // Redirect back to login if authentication parameters are missing
+    }
+
+    passport.authenticate('twitter', { failureRedirect: '/login' })(req, res, () => {
+        // Authentication successful, handle token retrieval and session setup
+        const accessToken = req.session.passport.user.accessToken;
+        const refreshToken = req.session.passport.user.refreshToken;
+        const userProfile = req.session.passport.user.profile; // Assuming profile information is available in the session
+
+
+        // Perform actions with the retrieved tokens and user profile
+        // For example, store tokens and user profile in session
+        req.session.accessToken = accessToken;
+        req.session.refreshToken = refreshToken;
+        req.session.userProfile = userProfile;
+        twitterApi.setAccessToken(accessToken);
+        twitterApi.setRefreshToken(refreshToken);
+
+        res.redirect('/'); // Redirect to home page after successful authentication
+    });
 });
+
+
 
 app.get('/getDistinctArtists', isAuthenticated, (req, res) => {
     const playlistUrl = req.query.playlistUrl;

@@ -127,6 +127,14 @@ p {
 </form>
 
 
+<% if (userProfile) { %>
+    <h1>Welcome, <%= userProfile.displayName %>!</h1>
+    <img src="<%= userProfile.profileImageUrl %>" alt="<%= userProfile.displayName %>'s Profile Image">
+    <!-- Display other profile information as needed -->
+<% } else { %>
+    <p>User profile not available.</p>
+<% } %>
+
 </section>
 <!-- Login Button -->
 
