@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Playlist</title>
+</head>
+<body>
+    <h1>User Playlist - <%= playlistId %></h1>
+    
+    <!-- Display songs in the playlist -->
+    <ul>
+        <% songs.forEach(song => { %>
+            <li><%= song.name %></li>
+        <% }); %>
+    </ul>
+</body>
+</html>

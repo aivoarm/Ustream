@@ -1,133 +1,56 @@
 
-<style>
-/* Custom CSS for homepage */
-body {
-    background-color: #f8f9fa; /* Light gray background */
-    font-family: Arial, sans-serif;
-}
+    <!-- Header section -->
+    <header>
+        <h1>Welcome to Your Application</h1>
+    
+        <nav class="navbar navbar-expand-lg bg-body-tertiary">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="/">Home</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
+               
+                </ul>
+                <form class="d-flex" role="search">
+                  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                  <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+              </div>
+            </div>
+          </nav>
+    
+    
+        
+    </header>
+<!-- Main content section -->
+<main class="container">
+    <% user.spotify %>
 
-h3 {
-    color: #1db954; /* Spotify green color */
-}
+    <% if (user ) { %>
+        
+        <h1>Welcome, <%= displayName %>!</h1>
+        <p>Email: <%= userEmail %></p>
+        
+        <h2>Public Playlists</h2>
+        <ul>
+            <% publicPlaylists.forEach(playlist => { %>
+                <li><%= playlist.name %></li>
+            <% }); %>
+        </ul>
+    
+        <!-- Other content of your dashboard -->
+    
+        <br>
+        <a href="/logout">Logout</a>
 
-.home-img-spotify {
-    width: 100px;
-    height: 100px;
-    margin-bottom: 20px;
-}
+    <% } else { %>
+        <br>
+        <a href="/login">Login</a>
+        <br>
+  
+    <% } %>
+</main>
 
-p {
-    color: #333; /* Dark text color */
-}
-
-.container form {
-    display: flex;
-    align-items: center;
-}
-
-.container label {
-    margin-right: 10px;
-}
-
-.container input[type="text"] {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
-}
-
-.container button[type="submit"] {
-    padding: 8px 16px;
-    background-color: #1db954; /* Spotify green color */
-    border: none;
-    border-radius: 4px;
-    color: #fff; /* White text color */
-    cursor: pointer;
-}
-
-.btn-primary {
-    background-color: #1db954; /* Spotify green color */
-    color: #fff; /* White text color */
-    border: none;
-    border-radius: 4px;
-    padding: 10px 20px;
-    text-decoration: none;
-    display: inline-block;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-}
-
-.btn-primary:hover {
-    background-color: #0a874e; /* Darker green color on hover */
-}
-
-/* Styling for CTA button */
-.btn-cta {
-    background-color: #ff6b6b; /* Red color for CTA button */
-    color: #fff; /* White text color */
-    border: none;
-    border-radius: 4px;
-    padding: 12px 24px; /* Larger padding for CTA button */
-    text-decoration: none;
-    display: inline-block;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-}
-
-.btn-cta:hover {
-    background-color: #e44242; /* Darker red color on hover */
-}
-
-
-</style>
-
-<div class="container">
-        <h3>we all love Spotify</h3>
-        <img class="home-img-spotify" src="/images/spotify-icon.png" alt="Spotify Icon">
-   
-        <p>Hi, my name is Arman Ayva, I am a musician, an indie atrist.</p>
-        <p>  I compose and distrebute my music. And as other indie artist i have a challange , to have music heard
-            <p>Here we help artists like myslelf, we find our community and close circle friends . we stream our own playlists</p>
-
-
-        <section class="container">
-
-        <!-- Other Search Forms -->
-        <div class="mb-3">
-            <form action="/artists/" method="GET">
-                <label>Find Artist:
-                    <input type="text" name="artistName" placeholder="Find artist..." />
-                </label>
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        <div class="mb-3">
-            <form action="/artists/" method="GET">
-                <label>Find Track:
-                    <input type="text" name="trackName" placeholder="Find track..." />
-                </label>
-                <button type="submit">Search</button>
-            </form>
-        </div>
-        <a href="/step1" class="btn btn-cta mb-2">step1</a>
-
-        <!-- Form to fetch distinct artists from a playlist -->
-<form action="/getDistinctArtists" method="GET">
-    <label>Playlist URL:
-        <input type="text" name="playlistUrl" placeholder="Enter playlist URL..." />
-    </label>
-    <button type="submit">Get Distinct Artists</button>
-</form>
-
-
-</section>
-<!-- Login Button -->
-
-</div>

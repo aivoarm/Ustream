@@ -1,5 +1,5 @@
 /* Custom CSS for homepage */
-body {
+body.container {
     background-color: #f8f9fa; /* Light gray background */
     font-family: Arial, sans-serif;
 }
@@ -81,4 +81,33 @@ p {
 
 .btn-cta:hover {
     background-color: #e44242; /* Darker red color on hover */
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+.delete-btn {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.login-form {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
 }

@@ -2,264 +2,230 @@
 const functions = require('firebase-functions');
 require('dotenv').config()
 
-const express = require('express')
-const expressLayouts = require('express-ejs-layouts')
+const express = require('express');
+const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
-const session = require('express-session'); // Add session management
+const session = require('express-session');
+const adminRouter = require('./admin');
+const SpotifyWebApi = require('spotify-web-api-node');
+const db = require('./database'); // Import SQLite database module
+const app = express();
 
-// require spotify-web-api-node package here:
-const SpotifyWebApi = require('spotify-web-api-node')
-
-// setting the spotify-api goes here:
+// Setting up Spotify API
 const spotifyApi = new SpotifyWebApi({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     redirectUri: 'http://localhost:5000/callback'
-})
+});
 
-// Use session middleware
-const app = express()
+spotifyApi.clientCredentialsGrant()
+    .then(data => spotifyApi.setAccessToken(data.body['access_token']))
+    .catch(error => console.log('Something went wrong when retrieving an access token', error));
+
+app.use(expressLayouts);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+app.use(express.static(__dirname + '/public'));
+
 app.use(session({
-    secret: 'your_secret_key',
+    secret: 'your-secret-key',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Set to true if using HTTPS
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // Set your desired expiration time
 }));
 
-// Check if user is authenticated middleware
+app.use('/admin', adminRouter);
+
+// Middleware for checking authentication
 const isAuthenticated = (req, res, next) => {
-    if (req.session.accessToken) {
-        spotifyApi.setAccessToken(req.session.accessToken);
-        next();
+    if (req.session.user) {
+        next(); // User is authenticated
     } else {
-        res.redirect('/login');
+        res.redirect('/login'); // Redirect to login page if not authenticated
     }
 };
 
-// Retrieve an access token
-spotifyApi.clientCredentialsGrant()
-    .then(data => spotifyApi.setAccessToken(data.body['access_token']))
-    .catch(error => console.log('Something went wrong when retrieving an access token', error))
+// Route handler for home page
+app.get('/', isAuthenticated, (req, res) => {
+    res.render('index', { user: req.session.user });
+});
 
-app.use(expressLayouts)
-app.use(bodyParser.urlencoded({ extended: true }));
-app.set('view engine', 'ejs')
-app.set('views', __dirname + '/views')
-app.use(express.static(__dirname + '/public'))
-
-
-// Define routes for authentication
+// Route handler for login page
 app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+
+// Route handler for login page
+app.get('/auth/spotify', (req, res) => {
     const scopes = ['user-read-recently-played', 'playlist-read-private']; // Scopes required for your app
     const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
+
     res.redirect(authorizeURL);
 });
 
-app.get('/callback', (req, res) => {
-    const { code } = req.query;
-    spotifyApi.authorizationCodeGrant(code)
-        .then(data => {
-            const { access_token, refresh_token } = data.body;
-            req.session.accessToken = access_token; // Store access token in session
-            spotifyApi.setAccessToken(access_token);
-            spotifyApi.setRefreshToken(refresh_token);
-            res.redirect('/'); // Redirect to home page after successful authentication
-        })
-        .catch(err => {
-            console.log('Error authorizing user:', err);
-            res.redirect('/login'); // Redirect back to login if authentication fails
-        });
-});
 
-app.get('/', (req, res) => {
-    res.render('index');
-});
+// Route handler for login form submission
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
 
-app.get('/getDistinctArtists', isAuthenticated, (req, res) => {
-    const playlistUrl = req.query.playlistUrl;
-    const playlistId = getPlaylistIdFromUrl(playlistUrl); // Assuming you have a function to extract playlist ID
-
-    if (!playlistId) {
-        res.status(400).send('Invalid playlist URL');
-        return;
-    }
-
-    spotifyApi.getPlaylistTracks(playlistId, { limit: 100 }) // Adjust limit as needed
-        .then(data => {
-            const tracks = data.body.items;
-            const artistsMap = new Map(); // Use a Map to store detailed artist information
-
-            tracks.forEach(track => {
-                track.track.artists.forEach(artist => {
-                    const artistId = artist.id;
-                    const artistName = artist.name;
-
-                    if (!artistsMap.has(artistId) && artistId) {
-                        artistsMap.set(artistId, {
-                            id: artistId, // Store artist ID for later use
-                            name: artistName,
-                            profileUrl: artist.external_urls.spotify,
-                            imageUrl: '', // Placeholder for profile image URL
-                            streamCount: 0 // Initialize stream count
-                        });
-                    }
-
-                    if (artistId) {
-                        artistsMap.get(artistId).streamCount++; // Increment stream count for the artist
-                    }
-                });
-            });
-
-            // Fetch detailed artist information including profile images
-            const artistPromises = Array.from(artistsMap.values()).map(artistInfo => {
-                if (artistInfo.id) {
-                    return spotifyApi.getArtist(artistInfo.id)
-                        .then(data => {
-                            const imageUrl = data.body.images.length > 0 ? data.body.images[0].url : '';
-                            artistInfo.imageUrl = imageUrl; // Update profile image URL
-                        })
-                        .catch(err => console.log('Error fetching artist details:', err));
-                } else {
-                    return Promise.resolve(); // Resolve with no action if artist ID is missing
-                }
-            });
-
-            // Wait for all artist details to be fetched before rendering the view
-            Promise.all(artistPromises)
-                .then(() => {
-                    const distinctArtists = Array.from(artistsMap.values());
-                    res.render('distinctArtists', { distinctArtists: distinctArtists });
-                })
-                .catch(err => {
-                    console.log('Error fetching artist details:', err);
-                    res.status(500).send('Error fetching data');
-                });
-        })
-        .catch(err => {
-            console.log('Error getting playlist tracks:', err);
-            res.status(500).send('Error fetching data');
-        });
-});
-
-
-// Routes that require authentication
-app.get('/step1', isAuthenticated, (req, res) => {
-    // Fetch the user's liked playlists from Spotify API
-    const likedPlaylists = []; // Extract the liked playlists from the response
-   
-        // Fetch the user's playlists from Spotify API
-        spotifyApi.getUserPlaylists({ limit: 10 }) // Example limit of 10 playlists
-            .then(data => {
-                const playlists = data.body.items; // Extract the playlists from the response
-               // console.log(playlists);
-                res.render('step1', { likedPlaylists: playlists });
-            })
-            .catch(err => {
-                console.log('Error getting playlists:', err);
-                res.status(500).send('Error fetching data');
-            });
-    });
-    
-
-    function getPlaylistIdFromUrl(url) {
-        const regex = /https:\/\/open\.spotify\.com\/playlist\/([a-zA-Z0-9]{22})/;
-        const match = url.match(regex);
-    
-        if (match && match.length > 1) {
-            return match[1];
+    if (username && password) {
+        if (isValidCredentials(username, password)) {
+            req.session.user = {
+                username: username,
+                role: getUserRole(username)
+            };
+            res.redirect('/');
         } else {
-            return null;
+            res.status(401).send('Invalid username or password');
         }
-    }
-    
-
-const moment = require('moment');
-
-app.post('/myplaylist', (req, res) => {
-    const today = moment().startOf('day'); // Get the start of the current day
-
-    const playlistUrl = req.body.playlistUrl; // Assuming you're using body-parser middleware to parse form data
-    const playlistId = getPlaylistIdFromUrl(playlistUrl); // Implement this function to extract the playlist ID from the URL
-
-    spotifyApi.getMyRecentlyPlayedTracks({ limit: 50 })
-        .then(recentlyPlayed => {
-            const todayTracks = recentlyPlayed.body.items.filter(track => {
-                const playedAtDate = moment(track.played_at);
-                return playedAtDate.isSame(today, 'day');
-            });
-
-            const playlistPromise = spotifyApi.getPlaylist(playlistId, { market: 'US' });
-            
-            return Promise.all([todayTracks, playlistPromise]);
-        })
-        .then(([todayTracks, playlistData]) => {
-            const playlist = playlistData.body;
-            const playlistTrackIds = playlist.tracks.items.map(item => item.track.id);
-            
-            // Filter today's tracks to get only the ones that match tracks in the playlist
-            const matchingTracks = todayTracks.filter(track => playlistTrackIds.includes(track.track.id));
-            
-            res.render('myplaylist', { recentTracks: todayTracks, playlist: playlist, matchingTracks: matchingTracks });
-        })
-        .catch(err => console.log('Error getting data:', err));
-});
-
-
-app.get('/artists', (req, res) => {
-    if (req.query.artistName) {
-        spotifyApi
-        .searchArtists(req.query.artistName) 
-        .then(data => {
-            res.render('artist', {artists: data.body.artists.items});
-        })
-        .catch(err => console.log('The error while searching artists occurred: ', err));
     } else {
-        spotifyApi
-        .searchTracks(req.query.trackName) 
-        .then(data => {
-            console.log(data.body.tracks.items.map(track => track.artists));
-            res.render('tracks', {tracks: data.body.tracks.items});
-        })
-        .catch(err => console.log('The error while searching artists occurred: ', err));
+        res.status(400).send('Username and password are required');
     }
 });
 
-app.get('/artists/:id', (req, res) => {
-    spotifyApi
-    .getArtist(req.params.id)
-    .then(data => {
-        res.render('artist', {artists: data.body.items});
-    })
-    .catch(err => console.log('The error while searching artists occurred: ', err));
+
+
+// Route handler for logout
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error logging out:', err);
+        }
+        res.redirect('/');
+    });
 });
 
-app.get('/albums/:id', (req, res) => {
-    spotifyApi
-    .getArtistAlbums(req.params.id) 
-    .then(data => {
-        res.render('album', {albums: data.body.items});
-    })
-    .catch(err => console.log('The error while searching albums occurred: ', err));
-  });
 
-app.get('/tracks/:id', (req, res) => {
-    spotifyApi
-    .getAlbumTracks(req.params.id)
-    .then(data => {
-        console.log(data.body.items)
-        res.render('tracks', {tracks: data.body.items});
-    })
-    .catch(err => console.log('The error while searching artists occurred: ', err));
-});
-  
-app.get('/playlist/:id', (req, res) => {
-    spotifyApi
-    .getAlbumTracks(req.params.id)
-    .then(data => {
-        console.log(data.body.items)
-        res.render('playlists', {tracks: data.body.items});
-    })
-    .catch(err => console.log('The error while searching artists occurred: ', err));
+app.get('/callback', async (req, res) => {
+    const { code } = req.query;
+
+    try {
+        const data = await spotifyApi.authorizationCodeGrant(code);
+        const { access_token, refresh_token } = data.body;
+
+        spotifyApi.setAccessToken(access_token);
+        spotifyApi.setRefreshToken(refresh_token);
+
+        const userData = await spotifyApi.getMe();
+        const userId = userData.body.id;
+
+        // Check if the user exists in your database
+        // If not, add the user to the database
+        const existingUser = await db.getUserByEmail(userId);
+
+        if (!existingUser) {
+            await db.addUser(userId, "user", "tmp@email", 'your_default_password');
+        }
+
+        // Get user data from your database after adding/updating the user
+        const userFromDB = await db.getUserByEmail(userId);
+
+        // Fetch user's public playlists
+        const playlistsData = await spotifyApi.getUserPlaylists(userId, { limit: 10, offset: 0 });
+        const playlists = playlistsData.body.items; // Extract the playlists from the response
+
+        // Redirect or render a page with user data and playlists
+        res.render('index', { user: userFromDB, displayName: userData.body.display_name, userEmail: userData.body.email, publicPlaylists: playlists });
+   
+    } catch (err) {
+        console.error('Error retrieving user data:', err);
+        res.status(500).send('Error retrieving user data');
+    }
 });
 
-app.listen(5000, () => console.log('localhost:5000'))
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////v/////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+app.get('/admin/playlists', isAuthenticated, (req, res) => {
+    // Display playlists and options for admins
+    res.render('admin/playlists');
+});
+
+app.post('/admin/playlists/create', isAuthenticated, (req, res) => {
+    // Create a new playlist based on form data
+    const { playlistName } = req.body;
+    // Use Spotify API to create the playlist
+    spotifyApi.createPlaylist(req.session.userId, playlistName)
+        .then(data => {
+            // Handle successful playlist creation
+            res.redirect('/admin/playlists');
+        })
+        .catch(err => {
+            console.log('Error creating playlist:', err);
+            res.redirect('/admin/playlists');
+        });
+});
+
+app.post('/admin/playlists/:playlistId/add', isAuthenticated, (req, res) => {
+    // Add a song to a playlist based on form data
+    const { playlistId, songLink } = req.body;
+    // Use Spotify API to add the song to the playlist
+    spotifyApi.addTracksToPlaylist(playlistId, [songLink])
+        .then(data => {
+            // Handle successful song addition
+            res.redirect('/admin/playlists');
+        })
+        .catch(err => {
+            console.log('Error adding song to playlist:', err);
+            res.redirect('/admin/playlists');
+        });
+});
+
+
+app.get('/artist/requests', isAuthenticated, (req, res) => {
+    // Display form for artists to request song additions
+    res.render('artist/requests');
+});
+
+app.post('/artist/requests/add', isAuthenticated, (req, res) => {
+    // Process artist's song addition request
+    const { playlistId, songLink } = req.body;
+    // Check if artist already has a song in the playlist
+    // If not, use Spotify API to add the song to the playlist
+    // Handle success and error cases
+    res.redirect('/artist/requests');
+});
+
+app.get('/user/playlists', isAuthenticated, (req, res) => {
+    // Display playlists for users to choose from
+    res.render('user/playlists');
+});
+
+app.get('/user/playlists/:playlistId', isAuthenticated, (req, res) => {
+    // Display songs in the selected playlist for users to play
+    const { playlistId } = req.params;
+    // Use Spotify API to get playlist details and songs
+    // Render playlist details and songs in the view
+    res.render('user/playlist', { playlistId });
+});
+
+
+app.listen(5000, () => console.log('http://localhost:5000'))
+
+// Example functions for validation and role retrieval
+function isValidCredentials(username, password) {
+    return (username === 'admin' && password === process.env.ADMINPASS);
+}
+
+function getUserRole(username) {
+    return 'user';
+}
+
+
+function getPlaylistIdFromUrl(url) {
+    const regex = /https:\/\/open\.spotify\.com\/playlist\/([a-zA-Z0-9]{22})/;
+    const match = url.match(regex);
+
+    if (match && match.length > 1) {
+        return match[1];
+    } else {
+        return null;
+    }
+}
+

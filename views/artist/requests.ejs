@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Requests</title>
+</head>
+<body>
+    <h1>Artist Requests</h1>
+    
+    <!-- Form to request song addition to a playlist -->
+    <form action="/artist/requests/add" method="POST">
+        <label for="playlistId">Playlist ID:</label>
+        <input type="text" id="playlistId" name="playlistId" required>
+        <label for="songLink">Song Link:</label>
+        <input type="text" id="songLink" name="songLink" required>
+        <button type="submit">Request Song Addition</button>
+    </form>
+</body>
+</html>
