@@ -9,7 +9,7 @@ node_modules/
 .env.production
 
 # Ignore build output
-dist/
+#dist/
 build/
 *.log
 
